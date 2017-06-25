@@ -1,0 +1,37 @@
+{
+  "name": "schedler",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node -- index.js",
+    "build": "babel-node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gaspatchi/schedler.git"
+  },
+  "author": "Nikita Berezhnoy",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/gaspatchi/schedler/issues"
+  },
+  "homepage": "https://github.com/gaspatchi/schedler#readme",
+  "dependencies": {
+    "ajv": "^5.2.0",
+    "ajv-i18n": "^2.0.2",
+    "body-parser": "^1.17.2",
+    "consul": "^0.29.0",
+    "express": "^4.15.3",
+    "pg": "^6.2.4",
+    "prom-client": "^9.1.1",
+    "sequelize": "^4.1.0",
+    "tarantool-driver": "^2.0.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-env": "^1.5.2",
+    "eslint": "^4.0.0",
+    "nodemon": "^1.11.0"
+  }
+}
