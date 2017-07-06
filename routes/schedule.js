@@ -1,5 +1,5 @@
 import express from "express";
-import { schedule_created, groups_selected, teachers_selected, last_group_schedule, last_teacher_schedule, group_dates, teacher_dates, group_date, teacher_date } from "../lib/prometheus";
+import { schedule_created, schedule_updated, groups_selected, teachers_selected, last_group_schedule, last_teacher_schedule, group_dates, teacher_dates, group_date, teacher_date } from "../lib/prometheus";
 import { Specialties, Teachers, Groups, Schedule, Lessons, Cabinets } from "../models/schedule";
 import _ from "lodash";
 import sequelize from "sequelize";
@@ -16,23 +16,51 @@ schedule_router.post("/", JsonValidate("post_schedule"), async (req, res) => {
 		let group_id = await Groups.findOrCreate({ where: { group: req.body.group }, defaults: { verified: false } });
 		let cabinet_id = await Cabinets.findOrCreate({ where: { cabinet: req.body.cabinet }, defaults: { verified: false } });
 		let teacher_id = await Teachers.findOrCreate({ where: { shortname: req.body.teacher }, defaults: { firstname: req.body.teacher, lastname: req.body.teacher, patronymic: req.body.teacher, verified: false } });
-		let schedule = await Schedule.findOrCreate({
-			where: {
+		let current_schedule = await Schedule.findOne({ where: { group_id: group_id[0].group_id, date, index } });
+		if (current_schedule === null) {
+			let schedule = await Schedule.create({
 				lesson_id: lesson_id[0].lesson_id,
 				group_id: group_id[0].group_id, cabinet_id: cabinet_id[0].cabinet_id,
 				teacher_id: teacher_id[0].teacher_id, date, index
-			}
-		});
-		if (schedule[1] === true) {
-			let result = await tarantool.postSchedule(req.body.group, date);
-			if (result[0][0] === true) {
-				schedule_created.inc();
-				res.status(200).json({ message: "Расписание успешно добавлено" });
-			} else {
-				throw Error("Ошибка при добавлении в очередь");
+			});
+			if (schedule !== null) {
+				let result = await tarantool.postSchedule(group_id[0].group_id, teacher_id[0].teacher_id, date, "create");
+				if (result[0][0] === true) {
+					schedule_created.inc();
+					res.status(200).json({ message: "Расписание успешно добавлено" });
+				} else {
+					throw Error("Ошибка при добавлении в очередь");
+				}
 			}
 		} else {
-			res.status(409).json({ message: "Расписание добавлено ранее" });
+			let update = false;
+			if (current_schedule.dataValues.lesson_id !== lesson_id[0].lesson_id) {
+				update = true;
+			}
+			if (current_schedule.dataValues.teacher_id !== teacher_id[0].teacher_id) {
+				update = true;
+			}
+			if (current_schedule.dataValues.cabinet_id !== cabinet_id[0].cabinet_id) {
+				update = true;
+			}
+			if (update == true) {
+				let schedule = await Schedule.update({
+					lesson_id: lesson_id[0].lesson_id,
+					cabinet_id: cabinet_id[0].cabinet_id,
+					teacher_id: teacher_id[0].teacher_id
+				}, { where: { group_id: group_id[0].group_id, date, index } });
+				if (schedule !== null) {
+					let result = await tarantool.postSchedule(group_id[0].group_id, teacher_id[0].teacher_id, date, "update");
+					if (result[0][0] === true) {
+						schedule_updated.inc();
+						res.status(200).json({ message: "Расписание успешно обнавлено" });
+					} else {
+						throw Error("Ошибка при добавлении в очередь");
+					}
+				}
+			} else {
+				res.status(409).json({ message: "Расписание не нуждается в обнавлении" });
+			}
 		}
 	} catch (error) {
 		console.log({ type: "Error", module: "Schedule", section: "postSchedule", message: error.message, date: new Date().toJSON() });
