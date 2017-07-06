@@ -9,7 +9,7 @@ const post_schedule = {
 	"properties": {
 		"date": { "type": "string" },
 		"group": { "type": "string" },
-		"index": { "type": "number" },
+		"index": { "type": "integer" },
 		"lesson": { "type": "string" },
 		"teacher": { "type": "string" },
 		"cabinet": { "type": "string" },
