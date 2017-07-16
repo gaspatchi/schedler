@@ -53,13 +53,13 @@ schedule_router.post("/", JsonValidate("post_schedule"), async (req, res) => {
 					let result = await tarantool.postSchedule(group_id[0].group_id, teacher_id[0].teacher_id, date, "update");
 					if (result[0][0] === true) {
 						schedule_updated.inc();
-						res.status(200).json({ message: "Расписание успешно обнавлено" });
+						res.status(200).json({ message: "Расписание успешно обновлено" });
 					} else {
 						throw Error("Ошибка при добавлении в очередь");
 					}
 				}
 			} else {
-				res.status(409).json({ message: "Расписание не нуждается в обнавлении" });
+				res.status(409).json({ message: "Расписание не нуждается в обновлении" });
 			}
 		}
 	} catch (error) {
@@ -137,9 +137,9 @@ schedule_router.get("/group/:group/dates", async (req, res) => {
 schedule_router.get("/group/:group/:date", async (req, res) => {
 	try {
 		let result = await Schedule.findAll({
-			where: { date: req.params.date },
+			where: { group_id: req.params.group, date: req.params.date },
 			attributes: ["date", "index"], include: [
-				{ model: Groups, as: "group", attributes: ["group_id", "group", "course"], where: { "group": req.params.group } },
+				{ model: Groups, as: "group", attributes: ["group_id", "group", "course"]},
 				{ model: Lessons, as: "lesson", attributes: ["lesson_id", "lesson"] },
 				{ model: Teachers, as: "teacher", attributes: ["teacher_id", "firstname", "lastname", "patronymic", "verified"] },
 				{ model: Cabinets, as: "cabinet", attributes: ["cabinet_id", "cabinet"] }]
