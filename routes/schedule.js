@@ -139,7 +139,7 @@ schedule_router.get("/group/:group/:date", async (req, res) => {
 		let result = await Schedule.findAll({
 			where: { group_id: req.params.group, date: req.params.date },
 			attributes: ["date", "index"], include: [
-				{ model: Groups, as: "group", attributes: ["group_id", "group", "course"]},
+				{ model: Groups, as: "group", attributes: ["group_id", "group", "course"] },
 				{ model: Lessons, as: "lesson", attributes: ["lesson_id", "lesson"] },
 				{ model: Teachers, as: "teacher", attributes: ["teacher_id", "firstname", "lastname", "patronymic", "verified"] },
 				{ model: Cabinets, as: "cabinet", attributes: ["cabinet_id", "cabinet"] }]
@@ -148,7 +148,7 @@ schedule_router.get("/group/:group/:date", async (req, res) => {
 			res.status(404).json({ message: "Расписание для группы не найдено" });
 		} else {
 			group_date.inc();
-			res.status(200).json({ schedule: result });
+			res.status(200).json({ schedule: _.sortBy(result, "index") });
 		}
 	} catch (error) {
 		console.log({ type: "Error", module: "Schedule", section: "getGroupDate", message: error.message, date: new Date().toJSON() });
@@ -168,7 +168,7 @@ schedule_router.get("/teacher/:teacher", async (req, res) => {
 			res.status(404).json({ message: "Расписание для преподавателя не найдено" });
 		} else {
 			last_teacher_schedule.inc();
-			res.status(200).json({ schedule: result });
+			res.status(200).json({ schedule: _.sortBy(result, "index") });
 		}
 	} catch (error) {
 		console.log({ type: "Error", module: "Schedule", section: "getTeacher", message: error.message, date: new Date().toJSON() });
@@ -187,7 +187,7 @@ schedule_router.get("/teacher/:teacher/dates", async (req, res) => {
 		}
 	} catch (error) {
 		console.log({ type: "Error", module: "Schedule", section: "getTeacherDates", message: error.message, date: new Date().toJSON() });
-		res.status(500).json({ message: "Невозможно получить список дат для группы" });
+		res.status(500).json({ message: "Невозможно получить список дат для преподавателя" });
 	}
 });
 
@@ -203,7 +203,7 @@ schedule_router.get("/teacher/:teacher/:date", async (req, res) => {
 			res.status(404).json({ message: "Расписание для преподавателя не найдено" });
 		} else {
 			teacher_date.inc();
-			res.status(200).json({ schedule: result });
+			res.status(200).json({ schedule: _.sortBy(result, "index") });
 		}
 	} catch (error) {
 		console.log({ type: "Error", module: "Schedule", section: "getTeacherDate", message: error.message, date: new Date().toJSON() });
