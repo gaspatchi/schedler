@@ -121,7 +121,7 @@ schedule_router.get("/group/:group", async (req, res) => {
 
 schedule_router.get("/group/:group/dates", async (req, res) => {
 	try {
-		let result = await Schedule.findAll({ attributes: ["date"], limit: 10, where: { "group_id": req.params.group } });
+		let result = await Schedule.findAll({ attributes: ["date"], where: { "group_id": req.params.group } });
 		if (result.length === 0) {
 			res.status(404).json({ message: "Для группы нет доступных дат" });
 		} else {
@@ -178,7 +178,7 @@ schedule_router.get("/teacher/:teacher", async (req, res) => {
 
 schedule_router.get("/teacher/:teacher/dates", async (req, res) => {
 	try {
-		let result = await Schedule.findAll({ limit: 10, attributes: ["date"], where: { "teacher_id": req.params.teacher } });
+		let result = await Schedule.findAll({attributes: ["date"], where: { "teacher_id": req.params.teacher } });
 		if (result.length === 0) {
 			res.status(404).json({ message: "Для преподавателя нет доступных дат" });
 		} else {
